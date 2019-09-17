@@ -139,6 +139,12 @@ defmodule Bamboo.SMTPAdapter do
     Mail.Renderers.RFC2822.render(message)
   end
 
+  defp put_to(m, addrs) when is_list(addrs) do
+    Enum.reduce(addrs, m, fn a, m -> 
+      put_to(m, a) 
+    end)
+  end
+
   defp put_to(m, {nil, address}), do: Mail.put_to(m, address)
   defp put_to(m, address), do: Mail.put_to(m, address)
 
