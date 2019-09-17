@@ -127,7 +127,7 @@ defmodule Bamboo.SMTPAdapter do
       |> Mail.put_from(email.from)
       |> Mail.put_bcc(email.bcc)
       |> Mail.put_cc(email.cc)
-      |> Mail.put_to(email.to)
+      |> put_to(email.to)
       |> Mail.put_text(email.text_body || "")
       |> Mail.put_html(email.html_body || "")
 
@@ -138,6 +138,9 @@ defmodule Bamboo.SMTPAdapter do
 
     Mail.Renderers.RFC2822.render(message)
   end
+
+  defp put_to(m, {nil, address}), do: Mail.put_to(m, address)
+  defp put_to(m, address), do: Mail.put_to(m, address)
 
   defp build_error({:ok, value}, _key, errors) when value != nil, do: errors
   defp build_error(_not_found_value, key, errors) do
