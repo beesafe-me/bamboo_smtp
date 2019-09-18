@@ -124,12 +124,12 @@ defmodule Bamboo.SMTPAdapter do
     message =
       Mail.build_multipart()
       |> Mail.put_subject(email.subject || "")
-      |> Mail.put_from(email.from)
+      |> put_from(email.from)
       |> Mail.put_bcc(email.bcc)
       |> Mail.put_cc(email.cc)
       |> put_to(email.to)
-      |> Mail.put_text(email.text_body || "")
-      |> Mail.put_html(email.html_body || "")
+      |> put_body(email.text_body, :put_text)
+      |> put_body(email.html_body, :put_html)
 
     message =
       Enum.reduce(email.attachments, message, fn attachment, message ->
@@ -148,9 +148,18 @@ defmodule Bamboo.SMTPAdapter do
   defp put_to(m, {nil, address}), do: Mail.put_to(m, address)
   defp put_to(m, address), do: Mail.put_to(m, address)
 
+  defp put_from(m, {nil, address}), do: Mail.put_from(m, address)
+  defp put_from(m, address), do: Mail.put_from(m, address)
+
   defp build_error({:ok, value}, _key, errors) when value != nil, do: errors
   defp build_error(_not_found_value, key, errors) do
     ["Key #{key} is required for SMTP Adapter" | errors]
+  end
+
+  defp put_body(m, v, _callback) when v in [nil, ""], do: m
+
+  defp put_body(m, v, callback) do
+    apply(Mail, callback, [m, v])
   end
 
   defp check_required_configuration(config) do
